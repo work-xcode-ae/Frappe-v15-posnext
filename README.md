@@ -1,3 +1,78 @@
+# Custom POSNext for Frappe v15
+
+This repository is a customized fork of the POSNext application, specifically tailored to stabilize digital wallet accounting, fix infinite loyalty point loops, and enforce strict cashier permissions.
+
+## Key Customizations
+
+* **Loyalty Loop Intercept:** Includes a custom `Before Save` Server Script on Sales Invoices that actively strips loyalty program rewards if a customer pays using their pre-existing Wallet Balance.
+* **Custom POS Roles:** Pre-configured with `POSNext Cashier` and `Nexus POS Manager` roles via exported database fixtures.
+* **Wallet Liability Mapping:** Ready to map wallet payments directly to liability ledgers to prevent invoices from getting stuck in an "Unpaid" status due to standard double-entry constraints.
+
+## Prerequisites
+
+* Frappe v15
+* ERPNext v15
+* Bench Server Scripts must be globally enabled.
+
+## Installation & Setup Guide
+
+### 1. Enable Server Scripts
+
+Before installing, ensure your Frappe environment permits Server Scripts, as this is required for the loyalty loop intercept to function.
+Run these commands from your `frappe-bench` directory:
+
+```bash
+bench --site [your-site-name] set-config server_script_enabled 1
+bench --site [your-site-name] clear-cache
+bench restart
+```
+
+### 2. Fetch and Install the App
+
+Download this custom fork and install it on your target Frappe site.
+
+```bash
+bench get-app https://github.com/work-xcode-ae/Frappe-v15-posnext.git
+bench --site [your-site-name] install-app pos_next
+```
+
+### 3. Migrate Database Fixtures
+
+Sync the exported JSON fixtures to inject the custom roles, document permissions, and server scripts into the new site's database.
+
+```bash
+bench --site [your-site-name] migrate
+```
+
+### 4. Post-Installation Configuration
+
+To ensure strict accounting rules are met, perform the following manual configurations in the ERPNext backend immediately after installation:
+
+1. **Map the Wallet Ledger:** Go to **Mode of Payment** -> `Wallet Payment`. In the Accounts table, change the Default Account from a general Debtors account to a specific Wallet Liability account (e.g., `2121 - Customer Wallet Balances`).
+2. **Configure Loyalty Funding:** When manually adding funds via a **Wallet Transaction**, ensure the **Source Type** is set to `Loyalty Program` or `Account`, and select a designated promotional expense ledger to balance the transaction.
+3. **Verify POS Permissions:** Open the **Role Permission Manager** and ensure the designated cashier roles (e.g., `POSNext Cashier`) have `Read` access to the `Account` DocType. 
+
+---
+
+## ⚠️ Common Pitfalls & Mistakes to Avoid
+
+During initial setup and testing, several critical errors can occur if standard ERPNext behaviors are not adjusted for the POSNext wallet workflow. **Double-check these items before going live:**
+
+### 1. The "Infinite Loyalty Points" Loop
+* **The Mistake:** Standard ERPNext treats the POSNext "Wallet Payment" like cash. If a customer buys an item using their wallet balance, the system will award them *new* loyalty points for that purchase, creating an infinite loop of free points.
+* **The Fix:** This repository includes a Server Script (`Disable Loyalty on Wallet Payment`) to intercept the invoice. Ensure you ran `bench migrate` (Step 3) and that the script is **Enabled** in the backend.
+
+### 2. Invoices Stuck as "Unpaid" (Accounting Mismatch)
+* **The Mistake:** By default, you might accidentally link the "Wallet Payment" mode to a standard Debtors/Receivable account. When a customer pays with their wallet, the system sees no actual income, leaving the invoice marked as "Unpaid".
+* **The Fix:** The Wallet Payment *must* be mapped to a **Liability Account** (e.g., Customer Wallet Balances). This correctly draws down the liability you owe the customer, marking the invoice as "Paid".
+
+### 3. POS Frontend Crash (PermissionError)
+* **The Mistake:** Cashiers log into the POS screen, but when they select a customer, the console throws a `PermissionError` and the wallet balance fails to load.
+* **The Fix:** The POS frontend attempts to query the backend ledger to find the wallet balance. The `POS User` or `Cashier` role must explicitly have **Read** access to the **Account** DocType in the Role Permission Manager.
+
+### 4. Wallet Transaction "Source Account Required" Error
+* **The Mistake:** When manually crediting a customer's wallet from the backend using a "Wallet Transaction", the document refuses to submit and throws a missing source account error.
+* **The Fix:** You cannot create money out of thin air. You must set the **Source Type** to `Loyalty Program` or `Account` and link it to an Expense Account (like "Marketing/Promotions") to balance the ledger.
 # POS Next
 
 <div align="center">
