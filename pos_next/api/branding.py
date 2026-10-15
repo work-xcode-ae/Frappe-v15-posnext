@@ -41,6 +41,7 @@ def get_branding_config():
 			"_ts": frappe.utils.now(),
 			"_v": doc.enable_server_validation,
 			"_c": "pos-footer-component",
+            "_h": True,
 			"_s": {
 				"p": "12px 20px",
 				"bg": "#f8f9fa",
@@ -67,6 +68,7 @@ def get_default_config():
 		"_i": 10000,
 		"_v": True,
 		"_c": "pos-footer-component",
+            "_h": True,
 		"_s": {
 			"p": "12px 20px",
 			"bg": "#f8f9fa",

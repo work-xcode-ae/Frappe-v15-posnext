@@ -2,7 +2,7 @@
 	<div
 		ref="footerRoot"
 		:class="footerClass"
-		:style="footerStyle"
+		:style="footerStyle" v-show="!isHidden"
 		:data-bw-sig="brandSignature"
 		@contextmenu.prevent
 		@selectstart.prevent
@@ -32,6 +32,7 @@ const linkText = ref("BrainWise");
 const footerLink = ref("https://nexus.brainwise.me");
 const footerRoot = ref(null);
 const config = ref({});
+const isHidden = computed(() => !!config.value?._h);
 const serverValidationEnabled = ref(true);
 
 // Dynamic class and style to prevent easy CSS targeting
@@ -139,6 +140,7 @@ const logClientEvent = async (eventType, details = {}) => {
 };
 
 const ensureBranding = () => {
+	if (isHidden.value) return;
 	if (!footerRoot.value) return;
 
 	const expectedBrand = atob(config.value._l || btoa("BrainWise"));
@@ -178,6 +180,7 @@ const ensureBranding = () => {
 };
 
 const ensureStylePresence = () => {
+	if (isHidden.value) return;
 	if (!styleElement || !document.head.contains(styleElement)) {
 		styleElement = document.createElement("style");
 		styleElement.textContent = `
@@ -214,6 +217,7 @@ const ensureStylePresence = () => {
 };
 
 const restoreFooter = () => {
+	if (isHidden.value) return;
 	if (!footerRoot.value) return;
 
 	const rootEl = footerRoot.value;
@@ -244,6 +248,7 @@ const handleLinkClick = () => {
 
 // Integrity check function
 const checkIntegrity = () => {
+	if (isHidden.value) return;
 	const elements = document.querySelectorAll(".pos-footer-component");
 
 	if (elements.length === 0) {

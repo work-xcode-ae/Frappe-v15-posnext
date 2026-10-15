@@ -41,7 +41,7 @@
 									@error="handleFlagError"
 								/>
 								<span class="flex-1 text-start">{{
-									selectedCountryCode || "+20"
+									selectedCountryCode || "+971"
 								}}</span>
 								<svg
 									class="w-4 h-4 text-gray-400"
@@ -349,7 +349,7 @@ const isEditMode = computed(() => !!props.customer?.name);
 
 const currentCountryCode = computed(() => {
 	const country = countriesStore.countries.find((c) => c.isd === selectedCountryCode.value);
-	return country?.code.toLowerCase() || "eg";
+	return country?.code.toLowerCase() || "ae";
 });
 
 const filteredCountries = computed(() => {
@@ -392,7 +392,7 @@ const handleClickOutside = (event) => {
 
 const setCountryFromName = (countryName) => {
 	if (!countryName) {
-		selectedCountryCode.value = "+20";
+		selectedCountryCode.value = "+971";
 		return;
 	}
 
@@ -402,7 +402,7 @@ const setCountryFromName = (countryName) => {
 		log.info(`Set country code to ${isd} for ${countryName}`);
 	} else {
 		log.warn(`Country "${countryName}" not found`);
-		selectedCountryCode.value = "+20";
+		selectedCountryCode.value = "+971";
 	}
 };
 
@@ -585,10 +585,10 @@ const posProfileResource = createResource({
 		fieldname: ["country"],
 	}),
 	auto: false,
-	onSuccess: (data) => setCountryFromName(data?.country || "Egypt"),
+	onSuccess: (data) => setCountryFromName(data?.country || "United Arab Emirates"),
 	onError: (err) => {
 		log.error("Error loading POS Profile", err);
-		selectedCountryCode.value = "+20";
+		selectedCountryCode.value = "+971";
 	},
 });
 
@@ -625,7 +625,7 @@ const loadDialogData = async () => {
 	if (props.posProfile) {
 		await posProfileResource.reload();
 	} else {
-		selectedCountryCode.value = "+20";
+		selectedCountryCode.value = "+971";
 	}
 };
 
